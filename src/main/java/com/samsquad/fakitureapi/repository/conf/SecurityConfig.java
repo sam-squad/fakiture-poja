@@ -10,20 +10,26 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/users").hasAnyRole("USER")
+                        .requestMatchers(requestMatchers()).hasAnyRole("USER")
                         .anyRequest()
                         .authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
         return http.build();
     }
+
+    private RequestMatcher[] requestMatchers() {
+        return new RequestMatcher[]{new AntPathRequestMatcher("/users")};
+    }
+
     @Bean
     public InMemoryUserDetailsManager userDetailsManager() {
         UserDetails user = User.builder()
@@ -33,6 +39,7 @@ public class SecurityConfig {
                 .build();
         return new InMemoryUserDetailsManager(user);
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
